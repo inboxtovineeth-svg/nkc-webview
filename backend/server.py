@@ -130,6 +130,15 @@ class AdvanceBulkPayload(BaseModel):
 
 # ---------------- App ----------------
 app = FastAPI(title="Nellai Karupatti Coffee — Manager")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origin_regex=r"https://.*\.netlify\.app",
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 api = APIRouter(prefix="/api")
 
 
@@ -171,7 +180,16 @@ async def register(payload: RegisterPayload, response: Response):
 
 @api.post("/auth/logout")
 async def logout(response: Response):
-    response.delete_cookie("access_token", path="/")
+    response.set_cookie(
+        key="access_token",
+        value="",
+        httponly=True,
+        secure=True,
+        samesite="none",
+        max_age=0,
+        expires=0,
+        path="/",
+    )
     return {"ok": True}
 
 
@@ -561,21 +579,6 @@ async def on_startup():
 async def on_shutdown():
     client.close()
 
-
-# CORS — must be added before routers
-frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:3000")
-cors_origins_env = os.environ.get("CORS_ORIGINS", "")
-origins = [o.strip() for o in cors_origins_env.split(",") if o.strip()]
-if frontend_url not in origins:
-    origins.append(frontend_url)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 app.include_router(api)
 
