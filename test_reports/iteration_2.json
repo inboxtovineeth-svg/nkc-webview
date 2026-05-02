@@ -1,0 +1,42 @@
+{
+  "summary": "Tested the Nellai Karupatti Coffee manager app end-to-end. Backend: all 16 pytest cases PASS (auth, employees CRUD + status toggle, leaves upsert, advances incl. zero-deletes, salary arithmetic 18000-1200-500=16300 verified, dashboard stats). Frontend: landing, login, dashboard KPIs, sidebar, employees add/toggle/delete, leaves save, salary table & Export CSV all work. Found one CRITICAL UI bug: on /advances the 'Apply to all' button is visually overlapped by the 'Clear all' button and cannot be clicked (Playwright pointer-intercept confirms).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "DELETE /api/employees/{id}", "issue": "Deleting an employee leaves orphan rows in leave_entries and advance_entries; dashboard still shows total_leave_days/month_advance_total for non-existent employees."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "AdvanceEntry — top control panel", "issue": "'Apply to all' button (x=834-939) is overlapped by 'Clear all' button (x=886-1018) on desktop; Playwright reports Clear-all intercepts pointer events on Apply-to-all. Root cause: the input group inside lg:col-span-4 uses `flex` without min-w-0/width cap, making the Apply button extend past its column into lg:col-span-2. Fix hints: wrap Apply button in a sibling column (e.g. col-span-3/3/2/..) OR set `min-w-0 overflow-hidden` on the flex row, or move the Apply button into its own col.", "selector": "[data-testid=\"advance-apply-bulk\"] vs [data-testid=\"advance-clear\"]", "priority": "HIGH"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Dashboard", "issues": ["When zero current employees exist, Quick figures card still shows 'Total leave days: 2' and 'Total advances given: ₹500' because orphan entries remain after employee deletion (see backend minor)."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Fix Advance Entry layout so 'Apply to all' and 'Clear all' don't overlap (restructure the 12-col grid or put Apply in its own column; at viewport 1920x1080 the overlap is ~53px and Clear blocks Apply).",
+    "On DELETE /api/employees/{id}, also remove db.leave_entries and db.advance_entries for that employee_id (and/or filter dashboard stats to current employees only)."
+  ],
+  "critical_code_review_comments": [
+    "server.py save_leaves/save_advances run update_one sequentially in a loop — fine for tiny rows but consider bulk_write for scale.",
+    "salary_for_month regex `^{month}` works but an index on advance_entries.date would help at scale; current index is compound (employee_id, date).",
+    "AdvanceEntry layout uses grid lg:grid-cols-12 with col-spans 3+4+2+3 but the input+Apply group inside col-4 overflows its column on desktop, causing the Clear-all in col-2 to stack on top. Needs layout fix.",
+    "Dashboard /api/dashboard/stats sums advances/leaves for the current month irrespective of employee status; orphan records inflate the numbers after deletion."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py"
+  ],
+  "success_rate": {"backend": "100% (16/16)", "frontend": "~90% (1 HIGH UI overlap bug)"},
+  "test_credentials": "admin@workforce.com / admin123 (seeded by backend on startup)",
+  "seed_data_creation": "Test created and then cleaned up TEST_/UI_/ZZ_ prefixed employees. Leave/advance entries for 2026-05/2026-07 that belonged to those employees are NOT cleaned up by the app on DELETE — they remain as orphans and inflate dashboard figures. After my manual cleanup only 0 employees remain (as user had).",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Backend pytest suite at /app/backend/tests/backend_test.py is the regression. Main open item is the Advance Entry button-overlap. After fix, re-open /advances at 1920x1080, assert advance-apply-bulk and advance-clear bounding boxes do not intersect, and that clicking Apply to all fills all row inputs.",
+  "rca of the issue": "AdvanceEntry top control panel uses `grid lg:grid-cols-12` with column spans 3/4/2/3. Inside the 4-col cell, a `flex` row contains currency span + number input (flex-1) + 'Apply to all' button (whitespace-nowrap, ~105px). At viewport 1920 with max-w-5xl (1280px) container minus sidebar/padding, the 4-col cell is ~320px but the flex row's minimum content width (including the 105px button) pushes past the cell boundary because flex items lack `min-w-0`. The adjacent 2-col cell hosting the full-width 'Clear all' button then gets rendered on top of the protruding Apply button, intercepting clicks. Reproduction: login as admin, go to /advances at 1920x1080, inspect data-testid=advance-apply-bulk (x+w=939) vs data-testid=advance-clear (x=886) — 53px overlap. Mitigation: either (a) restructure the grid (e.g. 3/3/3/3 with Apply in its own col), (b) add `min-w-0` to the input and/or the 4-col wrapper, or (c) reduce max-width of the bulk input group."
+}

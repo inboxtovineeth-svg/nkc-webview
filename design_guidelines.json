@@ -1,0 +1,101 @@
+{
+  "theme": "Light",
+  "archetype": "Archetype 4 (Swiss & High-Contrast)",
+  "emotional_tone": "Objective, Functional, Premium, Transparent",
+  "typography": {
+    "fonts": {
+      "headings": "Outfit",
+      "body": "IBM Plex Sans",
+      "mono": "JetBrains Mono"
+    },
+    "rules": {
+      "h1": "text-4xl sm:text-5xl lg:text-6xl tracking-tighter font-black",
+      "h2": "text-2xl sm:text-3xl lg:text-4xl tracking-tight font-bold",
+      "h3": "text-xl sm:text-2xl tracking-tight font-semibold",
+      "h4": "text-lg sm:text-xl font-medium",
+      "body": "text-base leading-relaxed text-zinc-700",
+      "small": "text-sm text-zinc-500",
+      "overline": "text-xs uppercase tracking-[0.2em] font-semibold text-zinc-500"
+    }
+  },
+  "colors": {
+    "backgrounds": {
+      "app": "bg-zinc-50",
+      "surface": "bg-white",
+      "dashboard_nav": "bg-zinc-900"
+    },
+    "text": {
+      "primary": "text-zinc-950",
+      "secondary": "text-zinc-500",
+      "inverse": "text-white"
+    },
+    "brand": {
+      "primary": "bg-blue-600 hover:bg-blue-700 text-white",
+      "accent": "bg-zinc-900 hover:bg-zinc-800 text-white"
+    },
+    "status": {
+      "success": "bg-green-100 text-green-700 border-green-200",
+      "warning": "bg-amber-100 text-amber-700 border-amber-200",
+      "critical": "bg-red-100 text-red-700 border-red-200",
+      "info": "bg-blue-100 text-blue-700 border-blue-200"
+    },
+    "borders": "border-zinc-200"
+  },
+  "layout_and_spacing": {
+    "general": "Use 'Technical Grid Borders' look. Expose the skeleton. Heavy use of 1px borders.",
+    "dashboard_mode": "Control Room Grid (grid-cols-4) with tight gap-4 or gap-6.",
+    "marketing_mode": "Tetris Grid (grid-cols-12) with wide gap-8 or gap-12. Asymmetrical layout.",
+    "padding": "Containers with borders must use p-6 or p-8 internally.",
+    "border_radius": "Sharp edges (rounded-none) or maximum rounded-sm (4px) for a structured, brutalist corporate feel."
+  },
+  "surfaces_and_micro_themes": {
+    "headers": "Sticky headers use Solid Background with a hard bottom border (border-b border-zinc-200), not glassmorphism, for maximum legibility.",
+    "cards": "Flat background (bg-white), 1px subtle border (border-zinc-200), NO shadow by default. Hover adds shadow-sm and -translate-y-[1px]."
+  },
+  "components_strategy": {
+    "general": "Use pure HTML/Tailwind for Landing Page. Use Heavily Customized Shadcn UI for Dashboard.",
+    "forms": "Shadcn Input, Select, Checkbox. Square borders, high contrast focus states (focus:ring-2 focus:ring-blue-600 focus:ring-offset-2).",
+    "tables": "Shadcn Tables. High contrast headers. Zebra striping or subtle border-b on rows. Right-aligned numeric data.",
+    "charts": "Shadcn Charts (Recharts). Use monochrome bars with one signal color (e.g., all zinc-300 bars, current month blue-600).",
+    "icons": "lucide-react"
+  },
+  "media": {
+    "hero_image": {
+      "url": "https://images.unsplash.com/photo-1664813953289-7c3350f040e0?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzN8MHwxfHNlYXJjaHwxfHxtaW5pbWFsaXN0JTIwYXJjaGl0ZWN0dXJlJTIwbW9kZXJuJTIwd2hpdGV8ZW58MHx8fHwxNzc3NjI3MjU5fDA&ixlib=rb-4.1.0&q=85",
+      "description": "Minimalist modern white architecture, perfect for a high-end SaaS corporate landing page hero or background."
+    },
+    "sponsor_logos": [
+      {
+        "url": "https://images.unsplash.com/photo-1764344815160-0e2afc6939a0?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTB8MHwxfHNlYXJjaHwyfHxjb21wYW55JTIwbG9nbyUyMHdoaXRlJTIwYmFja2dyb3VuZHxlbnwwfHx8fDE3Nzc1Njc3MTh8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Company Logo 1"
+      },
+      {
+        "url": "https://images.pexels.com/photos/9973170/pexels-photo-9973170.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "Company Logo 2"
+      }
+    ],
+    "testimonial_headshots": [
+      {
+        "url": "https://images.unsplash.com/photo-1652471943570-f3590a4e52ed?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2MzR8MHwxfHNlYXJjaHwyfHxwcm9mZXNzaW9uYWwlMjBidXNpbmVzcyUyMGhlYWRzaG90fGVufDB8fHx8MTc3NzYyNzI1NXww&ixlib=rb-4.1.0&q=85",
+        "description": "Professional male headshot for testimonial or dummy employee."
+      },
+      {
+        "url": "https://images.pexels.com/photos/37148308/pexels-photo-37148308.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "Professional confident business headshot for manager/admin dummy profile."
+      }
+    ]
+  },
+  "accessibility_and_testing": {
+    "contrast": "Minimum 4.5:1 for normal text. Use APCA guidelines. Ensure active/focus states are highly visible.",
+    "testing": "All interactive elements (buttons, links, form inputs) MUST include `data-testid` in kebab-case format based on role (e.g., `data-testid=\"login-submit-button\"`).",
+    "motion": "Respect `prefers-reduced-motion`."
+  },
+  "instructions_to_main_agent": [
+    "Build the landing page with absolute structural clarity using raw HTML+Tailwind. Focus on problem-solution narrative.",
+    "Use the Technical Grid Borders style for the HR Dashboard to convey 'authority and function'. Every widget should have a tight border and flat bg.",
+    "Do not use generic SaaS blues for everything. Use monochrome (Zinc/Black) for structure and Blue purely as a 'Signal' color (CTAs, Active Tabs).",
+    "Avoid heavily rounded corners. The max border-radius should be rounded-sm (4px) or rounded-none to maintain the Neo-Brutalist/Swiss edge.",
+    "Use the provided media URLs exclusively. DO NOT use placeholders.",
+    "The header must not be transparent. Use a solid background."
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "summary": "End-to-end verification of new Nellai Karupatti Coffee features: Regular/Contract employment_type, Previous Month Due carry-over, new leave-deduction rules, per-row View Breakup modal + CSV download. Backend pytest 29/29 PASS (17 regression + 12 new feature tests). Frontend UI flow at 1920x1080 verified: Contract toggle persists & renders as Contract badge in Type column; /salary table shows Type, Previous Month Due, and Net Payable columns; [data-testid='view-breakup-<id>'] opens modal with Leave/Advance/Previous breakup + working CSV download (breakup-Chandru-2026-05.csv) and [data-testid='breakup-close'] closes it. Minor: had to update two pre-existing assertions (TestSalary.test_salary_computation, TestCascadeDelete) because the NEW 'first 2 leaves free for Regular' rule changed expected deductions — these are test-data corrections, not business bugs.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "_compute_month_breakdown is called twice per employee per GET /salary/month (current + previous). For a shop with few employees fine, but would become O(2N) DB round-trips — acceptable at this scale.",
+    "Previous-month lookup is intentionally 1-level (no recursion), so a chain of negative months will only carry the immediately preceding month, not the full arrears. This matches the spec ('Previous-month lookup is 1-level (no recursion)') — confirmed working correctly.",
+    "Salary.jsx imports `previous_month_due` from the row with fallback `|| 0` — good. CSV download uses a blob+anchor pattern which works in the Playwright download harness.",
+    "Breakup endpoint correctly returns `employee` meta (id/name/mobile/employment_type/status/joining_date), `per_day_rate`, `free_leave_days`, `chargeable_leave_days`, `advances[]` filtered to month, `previous_month_net`, `previous_month_due`, `net_payable` — all fields asserted.",
+    "Backend validates month format for breakup route (returns 400 for 2026-13) and returns 404 for unknown employee — both covered."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py"
+  ],
+  "success_rate": {
+    "backend": "100% (29/29)",
+    "frontend": "100% (3/3 critical flows)"
+  },
+  "test_credentials": "admin@workforce.com / admin123 (seeded by backend on startup)",
+  "seed_data_creation": "Feature tests created TEST_ET_Default, TEST_ET_Contract, TEST_ET_Toggle, TEST_Reg_3Leaves, TEST_Reg_2Leaves, TEST_Reg_0Leaves, TEST_Con_3Leaves, TEST_PrevDue_Neg, TEST_PrevDue_Pos, TEST_Breakup_User, TEST_Breakup_InvMonth plus TEST_Karthik/TEST_Cascade_User — all deleted by TestZZCleanup. Frontend also created TEST_UI_Contract_<ts> and deleted it via the UI. Verified only Chandru & Sowmiya remain.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Regression suite /app/backend/tests/backend_test.py now has 29 tests including TestEmploymentType (3), TestSalaryArithmetic (6 — covers regular 0/2/3 leaves, contract 3 leaves, negative previous-month carryover, positive non-carryover), TestSalaryBreakup (3 — full structure incl. advances list, 404 unknown emp, 400 invalid month). Existing pre-existing employees Chandru and Sowmiya are preserved; do not delete. UI testids confirmed: form-employment-type-toggle, employment-type-<id>, view-breakup-<id>, breakup-download, breakup-close, breakup-net-payable, prev-due-<id>."
+}

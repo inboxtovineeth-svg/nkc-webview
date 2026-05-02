@@ -1,0 +1,93 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700;9..144,800&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: "DM Sans", system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #faf6f0;
+  color: #1c140e;
+}
+
+h1, h2, h3, h4, h5, h6, .font-display {
+  font-family: "Fraunces", "DM Sans", serif;
+  letter-spacing: -0.015em;
+  font-feature-settings: "ss01" on, "ss02" on;
+}
+
+code, .font-mono, .tabular {
+  font-family: "JetBrains Mono", Menlo, Monaco, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+@layer base {
+  :root {
+    --background: 36 33% 96%;
+    --foreground: 24 35% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 24 35% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 24 35% 10%;
+    --primary: 24 50% 28%;
+    --primary-foreground: 36 33% 97%;
+    --secondary: 30 25% 92%;
+    --secondary-foreground: 24 35% 15%;
+    --muted: 30 20% 94%;
+    --muted-foreground: 24 12% 40%;
+    --accent: 30 25% 92%;
+    --accent-foreground: 24 35% 15%;
+    --destructive: 0 70% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 30 20% 86%;
+    --input: 30 20% 86%;
+    --ring: 24 50% 28%;
+    --radius: 0.375rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+::selection {
+  background: #92400e;
+  color: #fff;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #f5efe6;
+}
+::-webkit-scrollbar-thumb {
+  background: #d6c5b1;
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #b89980;
+}
+
+/* Coffee bean / steam pattern utility */
+.bg-warm-grid {
+  background-image:
+    linear-gradient(to right, rgba(70, 35, 15, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(70, 35, 15, 0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+@layer base {
+  [data-debug-wrapper="true"] {
+    display: contents !important;
+  }
+}
