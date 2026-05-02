@@ -57,7 +57,7 @@ def set_auth_cookie(response: Response, access_token: str) -> None:
         value=access_token,
         httponly=True,
         secure=True,
-        samesite="lax",
+        samesite="none",
         max_age=12 * 60 * 60,
         path="/",
     )
@@ -562,22 +562,22 @@ async def on_shutdown():
     client.close()
 
 
-app.include_router(api)
-
-# CORS
+# CORS — must be added before routers
 frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:3000")
-cors_origins_env = os.environ.get("CORS_ORIGINS", "*")
+cors_origins_env = os.environ.get("CORS_ORIGINS", "")
 origins = [o.strip() for o in cors_origins_env.split(",") if o.strip()]
 if frontend_url not in origins:
     origins.append(frontend_url)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins if "*" not in origins else ["*"],
-    allow_credentials=True if "*" not in origins else False,
+    allow_origins=origins,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(api)
 
 
 logging.basicConfig(level=logging.INFO)
