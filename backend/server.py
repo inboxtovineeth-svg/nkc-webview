@@ -160,7 +160,10 @@ async def login(payload: LoginPayload, response: Response):
 
 
 @api.post("/auth/register")
-async def register(payload: RegisterPayload, response: Response):
+async def register(payload: RegisterPayload, current_user: dict = Depends(get_current_user)):
+    # Only a logged-in admin can create new users
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Only admins can create new users")
     email = payload.email.lower()
     if await db.users.find_one({"email": email}):
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -173,8 +176,6 @@ async def register(payload: RegisterPayload, response: Response):
         "role": "admin",
         "created_at": datetime.now(timezone.utc).isoformat(),
     })
-    access = create_access_token(user_id, email, "admin")
-    set_auth_cookie(response, access)
     return {"id": user_id, "name": payload.name, "email": email, "role": "admin"}
 
 
@@ -549,9 +550,13 @@ async def on_startup():
     await db.leave_entries.create_index([("employee_id", 1), ("month", 1)], unique=True)
     await db.advance_entries.create_index([("employee_id", 1), ("date", 1)], unique=True)
 
-    # seed admin
-    admin_email = os.environ.get("ADMIN_EMAIL", "admin").lower()
-    admin_password = os.environ.get("ADMIN_PASSWORD", "admin123")
+    # seed admin — ADMIN_EMAIL and ADMIN_PASSWORD must be set in environment variables
+    admin_email = os.environ.get("ADMIN_EMAIL")
+    admin_password = os.environ.get("ADMIN_PASSWORD")
+    if not admin_email or not admin_password:
+        logger.warning("ADMIN_EMAIL or ADMIN_PASSWORD not set — skipping admin seed. Set these env vars!")
+        return
+    admin_email = admin_email.lower()
     existing = await db.users.find_one({"email": admin_email})
     if not existing:
         await db.users.insert_one({
