@@ -7,6 +7,8 @@ load_dotenv(ROOT_DIR / ".env")
 import os
 import uuid
 import logging
+import time
+from collections import defaultdict
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional, Literal
 
@@ -22,6 +24,33 @@ from pydantic import BaseModel, Field, EmailStr
 mongo_url = os.environ["MONGO_URL"]
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ["DB_NAME"]]
+
+
+# ---------------- Rate limiting ----------------
+_login_attempts: dict = defaultdict(lambda: {"count": 0, "locked_until": 0.0})
+MAX_ATTEMPTS = 5
+LOCKOUT_SECONDS = 15 * 60  # 15 minutes
+
+def check_rate_limit(ip: str):
+    record = _login_attempts[ip]
+    now = time.time()
+    if now < record["locked_until"]:
+        remaining = int((record["locked_until"] - now) / 60) + 1
+        raise HTTPException(
+            status_code=429,
+            detail=f"Too many failed attempts. Try again in {remaining} minute(s)."
+        )
+
+def record_failed_attempt(ip: str):
+    record = _login_attempts[ip]
+    record["count"] += 1
+    if record["count"] >= MAX_ATTEMPTS:
+        record["locked_until"] = time.time() + LOCKOUT_SECONDS
+        record["count"] = 0
+        logger.warning(f"IP locked out after {MAX_ATTEMPTS} failed login attempts.")
+
+def reset_attempts(ip: str):
+    _login_attempts[ip] = {"count": 0, "locked_until": 0.0}
 
 
 # ---------------- Auth helpers ----------------
@@ -131,12 +160,16 @@ class AdvanceBulkPayload(BaseModel):
 # ---------------- App ----------------
 app = FastAPI(title="Nellai Karupatti Coffee — Manager")
 
+ALLOWED_ORIGINS = [
+    "https://celadon-unicorn-ba68b6.netlify.app",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"https://.*\.netlify\.app",
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 api = APIRouter(prefix="/api")
@@ -149,11 +182,15 @@ async def root():
 
 # ---------- Auth routes ----------
 @api.post("/auth/login")
-async def login(payload: LoginPayload, response: Response):
+async def login(payload: LoginPayload, request: Request, response: Response):
+    ip = request.client.host
+    check_rate_limit(ip)
     email = payload.email.lower()
     user = await db.users.find_one({"email": email})
     if not user or not verify_password(payload.password, user["password_hash"]):
+        record_failed_attempt(ip)
         raise HTTPException(status_code=401, detail="Invalid email or password")
+    reset_attempts(ip)
     access = create_access_token(user["id"], user["email"], user["role"])
     set_auth_cookie(response, access)
     return {"id": user["id"], "name": user["name"], "email": user["email"], "role": user["role"]}
