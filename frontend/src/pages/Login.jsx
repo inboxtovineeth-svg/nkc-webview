@@ -118,11 +118,7 @@ export default function Login() {
             </button>
           </form>
 
-          <div className="mt-8 p-4 border border-stone-200 bg-stone-100 rounded-md">
-            <p className="text-xs uppercase tracking-[0.2em] text-stone-500 mb-2">Demo / default</p>
-            <p className="font-mono text-xs text-stone-800">admin / Change@4545</p>
-            <p className="text-xs text-stone-500 mt-2">You can change these in <span className="font-mono">backend/.env</span> when running locally.</p>
-          </div>
+
         </div>
       </div>
     </div>
