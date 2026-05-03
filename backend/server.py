@@ -568,6 +568,11 @@ async def dashboard_stats(user: dict = Depends(get_current_user)):
     total_payroll = round(payroll[0]["total"], 2) if payroll else 0
 
     recent = await db.employees.find({}, {"_id": 0}).sort("created_at", -1).limit(5).to_list(5)
+    # Strip sensitive fields before returning
+    safe_recent = [
+        {"id": e["id"], "name": e["name"], "status": e.get("status"), "joining_date": e.get("joining_date"), "employment_type": e.get("employment_type")}
+        for e in recent
+    ]
     return {
         "current_employees": current,
         "ex_employees": ex,
@@ -575,7 +580,7 @@ async def dashboard_stats(user: dict = Depends(get_current_user)):
         "month_advance_total": month_advance_total,
         "month_leave_total": month_leave_total,
         "total_monthly_payroll": total_payroll,
-        "recent_employees": recent,
+        "recent_employees": safe_recent,
     }
 
 
